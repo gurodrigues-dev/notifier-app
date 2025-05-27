@@ -21,6 +21,6 @@ func NewListChannelsByPlatformUsecase(
 	}
 }
 
-func (lcu *ListChannelsByPlatformUsecase) ListByPlatformID(platform string) ([]entity.Channel, error) {
+func (lcu *ListChannelsByPlatformUsecase) ListByPlatform(platform string) ([]entity.Channel, error) {
 	return lcu.channelRepository.GetByPlatform(platform)
 }

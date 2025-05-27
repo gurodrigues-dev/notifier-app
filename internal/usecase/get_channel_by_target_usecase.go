@@ -21,6 +21,6 @@ func NewGetChannelByIDUsecase(
 	}
 }
 
-func (gcu *GetChannelByIDUsecase) GetByID(targetID string) (*entity.Channel, error) {
-	return gcu.channelRepository.GetByID(targetID)
+func (gcu *GetChannelByIDUsecase) GetByID(id string) (*entity.Channel, error) {
+	return gcu.channelRepository.GetByID(id)
 }

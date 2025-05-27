@@ -1,6 +1,7 @@
 package contracts
 
 import (
+	"io"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -40,4 +41,13 @@ type Metrics interface {
 	IncError(method, path string, errType string)
 	ObserveDuration(method, path string, durationSeconds float64)
 	ExposeHandler() gin.HandlerFunc
+}
+
+type Webhook interface {
+	Post(url, contentType string, body io.Reader) (*HTTPResponse, error)
+}
+
+type HTTPResponse struct {
+	StatusCode int
+	Close      func() error
 }

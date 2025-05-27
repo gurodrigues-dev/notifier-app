@@ -7,31 +7,31 @@ import (
 	"github.com/gurodrigues-dev/notifier-app/internal/entity"
 	"github.com/gurodrigues-dev/notifier-app/mocks"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
 
-func TestCreateTokenUsecase_CreateToken(t *testing.T) {
+func TestGetTokenUsecase_GetToken(t *testing.T) {
 	type args struct {
-		token *entity.Token
+		user string
 	}
 	tests := []struct {
 		name    string
 		args    args
-		setup   func(t *testing.T) *CreateTokenUsecase
+		setup   func(t *testing.T) *GetTokenByUserUsecase
 		wantErr bool
 	}{
 		{
 			name: "there is to return success",
 			args: args{
-				token: &entity.Token{},
+				user: "test_user",
 			},
-			setup: func(t *testing.T) *CreateTokenUsecase {
-				repository := mocks.NewAuthRepository(t)
+			setup: func(t *testing.T) *GetTokenByUserUsecase {
+				mock := mocks.NewAuthRepository(t)
 				logger := mocks.NewLogger(t)
-				repository.On("CreateToken", mock.Anything).Return(nil)
-				logger.On("Infof", mock.Anything, mock.Anything).Return()
-				return NewCreateTokenUsecase(
-					repository,
+				mock.On("GetTokenByUser", "test_user").Return(&entity.Token{
+					Token: "test_token123abc",
+				}, nil)
+				return NewGetTokenByUserUsecase(
+					mock,
 					logger,
 				)
 			},
@@ -40,14 +40,14 @@ func TestCreateTokenUsecase_CreateToken(t *testing.T) {
 		{
 			name: "there is to return db error",
 			args: args{
-				token: &entity.Token{},
+				user: "test_user",
 			},
-			setup: func(t *testing.T) *CreateTokenUsecase {
-				repository := mocks.NewAuthRepository(t)
+			setup: func(t *testing.T) *GetTokenByUserUsecase {
+				mock := mocks.NewAuthRepository(t)
 				logger := mocks.NewLogger(t)
-				repository.On("CreateToken", mock.Anything).Return(errors.New("db error"))
-				return NewCreateTokenUsecase(
-					repository,
+				mock.On("GetTokenByUser", "test_user").Return(&entity.Token{}, errors.New("db error"))
+				return NewGetTokenByUserUsecase(
+					mock,
 					logger,
 				)
 			},
@@ -57,7 +57,7 @@ func TestCreateTokenUsecase_CreateToken(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			usecase := tt.setup(t)
-			_, err := usecase.CreateToken(tt.args.token)
+			_, err := usecase.GetTokenByUser(tt.args.user)
 			if tt.wantErr {
 				assert.Error(t, err)
 				return

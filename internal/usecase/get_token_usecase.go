@@ -21,6 +21,6 @@ func NewGetTokenByUserUsecase(
 	}
 }
 
-func (gtu *GetTokenByUserUsecase) GetTokenByUser(token string) (*entity.Token, error) {
-	return gtu.authRepository.GetTokenByUser(token)
+func (gtu *GetTokenByUserUsecase) GetTokenByUser(user string) (*entity.Token, error) {
+	return gtu.authRepository.GetTokenByUser(user)
 }

@@ -91,7 +91,7 @@ func (cc *ChannelController) FindByGroup(httpContext *gin.Context) {
 		cc.logger,
 	)
 
-	channel, err := usecase.ListByGroupID(groupID)
+	channel, err := usecase.ListByGroup(groupID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			httpContext.JSON(http.StatusNotFound, gin.H{"error": "channel not found"})
@@ -117,7 +117,7 @@ func (cc *ChannelController) FindByPlatform(httpContext *gin.Context) {
 		cc.logger,
 	)
 
-	channel, err := usecase.ListByPlatformID(platformID)
+	channel, err := usecase.ListByPlatform(platformID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			httpContext.JSON(http.StatusNotFound, gin.H{"error": "channel not found"})

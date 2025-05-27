@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/gurodrigues-dev/notifier-app/internal/domain/repository"
@@ -17,16 +16,19 @@ import (
 type DispatcherUsecase struct {
 	notificationRepository repository.NotificationRepository
 	ses                    contracts.SESIface
+	webhook                contracts.Webhook
 	logger                 contracts.Logger
 }
 
 func NewDispatcherUsecase(
 	notificationRepository repository.NotificationRepository,
 	ses contracts.SESIface,
+	webhook contracts.Webhook,
 	logger contracts.Logger,
 ) *DispatcherUsecase {
 	return &DispatcherUsecase{
 		notificationRepository: notificationRepository,
+		webhook:                webhook,
 		ses:                    ses,
 		logger:                 logger,
 	}
@@ -39,6 +41,10 @@ func (du *DispatcherUsecase) Execute(message string) (err error) {
 	err = json.Unmarshal([]byte(message), &notification)
 	if err != nil {
 		return err
+	}
+
+	if notification.Retries >= value.MaxRetries {
+		fmt.Errorf("notification retries exceeded")
 	}
 
 	for _, channel := range notification.Channels {
@@ -89,10 +95,10 @@ func (du *DispatcherUsecase) Execute(message string) (err error) {
 		}
 	}
 
-	return fmt.Errorf("")
+	return nil
 }
 
-func (du *DispatcherUsecase) httpCall(webhook, platform, message string) error {
+func (du *DispatcherUsecase) httpCall(url, platform, message string) error {
 	payload := make(map[string]string)
 
 	if platform == value.DiscordPlatform {
@@ -108,11 +114,11 @@ func (du *DispatcherUsecase) httpCall(webhook, platform, message string) error {
 		return err
 	}
 
-	resp, err := http.Post(webhook, "application/json", bytes.NewBuffer(body))
+	resp, err := du.webhook.Post(url, "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer resp.Close()
 
 	if resp.StatusCode >= 300 {
 		return fmt.Errorf("slack webhook returned status code %d", resp.StatusCode)
