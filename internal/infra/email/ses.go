@@ -12,7 +12,7 @@ import (
 )
 
 type SesImpl struct {
-	sess *session.Session
+	ses *ses.SES
 }
 
 func NewSesImpl() *SesImpl {
@@ -29,13 +29,11 @@ func NewSesImpl() *SesImpl {
 	}
 
 	return &SesImpl{
-		sess: sess,
+		ses: ses.New(sess),
 	}
 }
 
 func (sesImpl *SesImpl) SendEmail(email *entity.Email) error {
-	svc := ses.New(sesImpl.sess)
-
 	emailInput := &ses.SendEmailInput{
 		Destination: &ses.Destination{
 			ToAddresses: []*string{aws.String(email.Recipient)},
@@ -53,7 +51,7 @@ func (sesImpl *SesImpl) SendEmail(email *entity.Email) error {
 		Source: aws.String(viper.GetString("AWS_SES_EMAIL_FROM")),
 	}
 
-	_, err := svc.SendEmail(emailInput)
+	_, err := sesImpl.ses.SendEmail(emailInput)
 
 	if err != nil {
 		return err
@@ -63,13 +61,11 @@ func (sesImpl *SesImpl) SendEmail(email *entity.Email) error {
 }
 
 func (sesImpl *SesImpl) VerifyEmail(email string) error {
-	svc := ses.New(sesImpl.sess)
-
 	verifyEmailInput := &ses.VerifyEmailIdentityInput{
 		EmailAddress: aws.String(email),
 	}
 
-	_, err := svc.VerifyEmailIdentity(verifyEmailInput)
+	_, err := sesImpl.ses.VerifyEmailIdentity(verifyEmailInput)
 
 	if err != nil {
 		return err

@@ -9,6 +9,7 @@ import (
 
 	"github.com/gurodrigues-dev/notifier-app/internal/infra"
 	"github.com/gurodrigues-dev/notifier-app/internal/infra/setup"
+	"github.com/gurodrigues-dev/notifier-app/internal/infra/webhook"
 	"github.com/gurodrigues-dev/notifier-app/internal/usecase"
 	"github.com/spf13/viper"
 )
@@ -47,6 +48,7 @@ func handler(ctx context.Context) {
 	usecase := usecase.NewDispatcherUsecase(
 		infra.App.Repositories.NotificationRepository,
 		infra.App.Email,
+		&webhook.DefaultClient{},
 		infra.App.Logger,
 	)
 

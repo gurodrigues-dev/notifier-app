@@ -82,7 +82,7 @@ func (cnu *CreateNotificationUsecase) CreateNotification(input value.Notificatio
 		return fmt.Errorf("notification already exists in cache")
 	}
 
-	cnu.logger.Infof("setting cache")
+	cnu.logger.Infof("creating cache")
 	err = cnu.setCache(notification.UUID, *notification)
 	if err != nil {
 		return err

@@ -20,6 +20,6 @@ func NewDeleteChannelByIDUsecase(
 	}
 }
 
-func (dcu *DeleteChannelByIDUsecase) DeleteByID(targetID string) error {
-	return dcu.channelRepository.DeleteByID(targetID)
+func (dcu *DeleteChannelByIDUsecase) DeleteByID(id string) error {
+	return dcu.channelRepository.DeleteByID(id)
 }

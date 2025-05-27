@@ -21,6 +21,10 @@ const (
 	MaxRetries = 3
 )
 
+var (
+	Platforms = []string{EmailPlatform, SlackPlatform, DiscordPlatform}
+)
+
 type NotificationInput struct {
 	UUID     string   `json:"uuid" validate:"required"`
 	Title    string   `json:"title" validate:"required"`

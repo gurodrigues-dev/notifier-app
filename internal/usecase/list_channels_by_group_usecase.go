@@ -21,6 +21,6 @@ func NewListChannelsByGroupUsecase(
 	}
 }
 
-func (lcu *ListChannelsByGroupUsecase) ListByGroupID(group string) ([]entity.Channel, error) {
+func (lcu *ListChannelsByGroupUsecase) ListByGroup(group string) ([]entity.Channel, error) {
 	return lcu.channelRepository.GetByGroup(group)
 }
