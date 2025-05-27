@@ -3,60 +3,63 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16
-    container_name: postgres
-    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: notify-db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       app-network:
         ipv4_address: 172.28.1.10
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: always
 
   redis:
     image: redis:7
-    container_name: redis
-    restart: always
+    volumes:
+      - redis_data:/data
     networks:
       app-network:
         ipv4_address: 172.28.1.11
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: always
 
-  notify-app:
+  notifier-app:
     image: ghcr.io/gurodrigues-dev/notifier-app:latest
-    container_name: notifier
-    restart: always
     ports:
       - "9999:9999"
     volumes:
       - ./config:/app/config
     environment:
-      ENVIRONMENT: "development"
+      ENVIRONMENT: development
     networks:
       app-network:
         ipv4_address: 172.28.1.20
+    deploy:
+      replicas: 3
+      restart_policy:
+        condition: always
 
-  notify-dispatcher:
-    container_name: dispatcher
+  notifier-dispatcher:
     image: ghcr.io/gurodrigues-dev/notifier-dispatcher:latest
-    restart: always
     volumes:
       - ./config:/app/config
     environment:
-      ENVIRONMENT: "development"
+      ENVIRONMENT: development
     networks:
-      - app-network
+      app-network:
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: always
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: prometheus
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     command:
@@ -66,24 +69,30 @@ services:
     networks:
       app-network:
         ipv4_address: 172.28.1.30
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: always
 
   grafana:
     image: grafana/grafana:latest
-    container_name: grafana
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
     volumes:
       - grafana_data:/var/lib/grafana
     networks:
       app-network:
         ipv4_address: 172.28.1.31
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: always
 
   alertmanager:
     image: prom/alertmanager:latest
-    container_name: alertmanager
     volumes:
       - ./monitoring/alertmanager:/etc/alertmanager
     command:
@@ -93,28 +102,32 @@ services:
     networks:
       app-network:
         ipv4_address: 172.28.1.32
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: always
 
   metabase:
     image: metabase/metabase:latest
-    container_name: metabase
-    restart: always
     ports:
       - "3001:3000"
     environment:
-      - MB_DB_TYPE=postgres
-      - MB_DB_DBNAME=notify-db
-      - MB_DB_PORT=5432
-      - MB_DB_USER=postgres
-      - MB_DB_PASS=admin
-      - MB_DB_HOST=postgres
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: notify-db
+      MB_DB_PORT: 5432
+      MB_DB_USER: postgres
+      MB_DB_PASS: admin
+      MB_DB_HOST: postgres
     networks:
       app-network:
         ipv4_address: 172.28.1.33
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: always
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
-    container_name: zookeeper
-    restart: unless-stopped
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -123,62 +136,68 @@ services:
     networks:
       app-network:
         ipv4_address: 172.28.1.40
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: unless-stopped
 
   broker:
     image: confluentinc/cp-kafka:latest
-    container_name: broker
-    restart: unless-stopped
     ports:
       - "9092:9092"
-    depends_on:
-      - zookeeper
     environment:
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092,PLAINTEXT_INTERNAL://broker:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     networks:
       app-network:
         ipv4_address: 172.28.1.41
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: unless-stopped
 
   create-topics:
     image: confluentinc/cp-kafka:latest
-    hostname: create-topics
-    container_name: create-topics
     depends_on:
       - broker
-    command: "
-      bash -c 'cub kafka-ready -b broker:29092 1 120 && \
-      kafka-topics --create --if-not-exists --bootstrap-server broker:29092 --partitions 2 --replication-factor 1 --topic notifications'"
+    command: >
+      bash -c "cub kafka-ready -b broker:29092 1 120 &&
+      kafka-topics --create --if-not-exists --bootstrap-server broker:29092 --partitions 2 --replication-factor 1 --topic notifications"
     environment:
       KAFKA_BROKER_ID: ignored
       KAFKA_ZOOKEEPER_CONNECT: ignored
     networks:
       app-network:
         ipv4_address: 172.28.1.42
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: none
 
   kafka-ui:
     image: provectuslabs/kafka-ui
-    container_name: kafka-ui
-    depends_on:
-      - broker
     ports:
       - "8092:8080"
-    restart: unless-stopped
     environment:
-      - KAFKA_CLUSTERS_0_NAME=local
-      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=broker:29092
-      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: broker:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
     networks:
       app-network:
         ipv4_address: 172.28.1.43
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: unless-stopped
 
 networks:
   app-network:
-    driver: bridge
+    driver: overlay
     ipam:
       config:
         - subnet: 172.28.0.0/16

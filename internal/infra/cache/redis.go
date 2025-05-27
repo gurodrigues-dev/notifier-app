@@ -3,7 +3,6 @@ package cache
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -21,8 +20,6 @@ func NewCacheImpl() *CacheImpl {
 		Addr:     viper.GetString("REDIS_ADDRESS"),
 		Password: viper.GetString("REDIS_PASSWORD"),
 	})
-
-	fmt.Println(client)
 
 	return &CacheImpl{
 		client: client,
