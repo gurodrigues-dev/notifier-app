@@ -1,0 +1,79 @@
+package email
+
+import (
+	"log"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/gurodrigues-dev/notifier-app/internal/entity"
+	"github.com/spf13/viper"
+)
+
+type SesImpl struct {
+	sess *session.Session
+}
+
+func NewSesImpl() *SesImpl {
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(viper.GetString("AWS_REGION")),
+		Credentials: credentials.NewStaticCredentials(
+			viper.GetString("AWS_ACCESS_KEY"),
+			viper.GetString("AWS_SECRET_KEY"),
+			viper.GetString("AWS_TOKEN"),
+		),
+	})
+	if err != nil {
+		log.Fatalf("failed to create session at aws: %v", err)
+	}
+
+	return &SesImpl{
+		sess: sess,
+	}
+}
+
+func (sesImpl *SesImpl) SendEmail(email *entity.Email) error {
+	svc := ses.New(sesImpl.sess)
+
+	emailInput := &ses.SendEmailInput{
+		Destination: &ses.Destination{
+			ToAddresses: []*string{aws.String(email.Recipient)},
+		},
+		Message: &ses.Message{
+			Body: &ses.Body{
+				Text: &ses.Content{
+					Data: aws.String(email.Body),
+				},
+			},
+			Subject: &ses.Content{
+				Data: aws.String(email.Subject),
+			},
+		},
+		Source: aws.String(viper.GetString("AWS_SES_EMAIL_FROM")),
+	}
+
+	_, err := svc.SendEmail(emailInput)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (sesImpl *SesImpl) VerifyEmail(email string) error {
+	svc := ses.New(sesImpl.sess)
+
+	verifyEmailInput := &ses.VerifyEmailIdentityInput{
+		EmailAddress: aws.String(email),
+	}
+
+	_, err := svc.VerifyEmailIdentity(verifyEmailInput)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

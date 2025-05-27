@@ -1,0 +1,8 @@
+BEGIN;
+
+ALTER TABLE tokens
+DROP CONSTRAINT IF EXISTS unique_admin_user;
+
+DROP TABLE IF EXISTS channels;
+
+COMMIT;

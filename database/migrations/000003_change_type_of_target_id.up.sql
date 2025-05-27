@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE channels
+ALTER COLUMN target_id TYPE TEXT;
+
+COMMIT;
