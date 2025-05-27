@@ -1,0 +1,448 @@
+basePath: /api/v1/
+definitions:
+  entity.Channel:
+    properties:
+      group:
+        type: string
+      id:
+        type: integer
+      platform:
+        type: string
+      target_id:
+        type: string
+    required:
+    - group
+    - platform
+    - target_id
+    type: object
+  entity.Token:
+    properties:
+      admin_user:
+        type: string
+      id:
+        type: integer
+      token:
+        type: string
+    required:
+    - admin_user
+    type: object
+  value.Event:
+    properties:
+      category:
+        type: string
+      cost_cents:
+        type: integer
+      currency:
+        type: string
+      name:
+        type: string
+      receiver:
+        type: string
+      requester:
+        type: string
+      timestamp:
+        type: integer
+    required:
+    - category
+    - cost_cents
+    - currency
+    - name
+    - receiver
+    - requester
+    - timestamp
+    type: object
+  value.NotificationInput:
+    properties:
+      channels:
+        items:
+          type: string
+        maxItems: 20
+        minItems: 1
+        type: array
+      event:
+        $ref: '#/definitions/value.Event'
+      message:
+        type: string
+      title:
+        type: string
+      uuid:
+        type: string
+    required:
+    - channels
+    - event
+    - title
+    - uuid
+    type: object
+host: localhost:9999
+info:
+  contact: {}
+  description: Notify API Swagger Documentation
+  termsOfService: http://swagger.io/terms/
+  title: Notify API
+  version: "0.1"
+paths:
+  /channel:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new channel based on the provided channel data.
+      parameters:
+      - description: Channel request body
+        in: body
+        name: channel
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Channel'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Channel created successfully
+          schema:
+            $ref: '#/definitions/entity.Channel'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new channel
+      tags:
+      - channel
+  /channel/{id}:
+    delete:
+      description: Deletes a channel by its unique identifier.
+      parameters:
+      - description: Channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Channel deleted successfully
+          schema:
+            type: string
+        "400":
+          description: Channel ID is required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Channel not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete channel by ID
+      tags:
+      - channel
+    get:
+      description: Retrieves a channel by its unique identifier.
+      parameters:
+      - description: Channel ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Channel retrieved successfully
+          schema:
+            $ref: '#/definitions/entity.Channel'
+        "400":
+          description: Channel ID is required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Channel not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get channel by ID
+  /channel/group/{group}:
+    get:
+      description: Retrieves a list of channels associated with a specific group ID.
+      parameters:
+      - description: Group ID
+        in: path
+        name: group
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Channels retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/entity.Channel'
+            type: array
+        "400":
+          description: Group ID is required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Channels not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get channels by group
+      tags:
+      - channel
+  /channel/platform/{platform}:
+    get:
+      description: Retrieves a list of channels associated with a specific platform
+        ID.
+      parameters:
+      - description: Platform ID
+        in: path
+        name: platform
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Channels retrieved successfully
+          schema:
+            items:
+              $ref: '#/definitions/entity.Channel'
+            type: array
+        "400":
+          description: Platform ID is required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Channels not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get channels by platform
+      tags:
+      - channel
+  /notification:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new notification based on the provided notification data.
+      parameters:
+      - description: Notification request body
+        in: body
+        name: notification
+        required: true
+        schema:
+          $ref: '#/definitions/value.NotificationInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Notification sent successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "422":
+          description: Unprocessable entity
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new notification
+      tags:
+      - notification
+  /notification/{id}:
+    get:
+      description: Retrieves a notification by its unique identifier.
+      parameters:
+      - description: Notification ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Notification retrieved successfully
+          schema:
+            $ref: '#/definitions/value.NotificationInput'
+        "404":
+          description: Notification not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get notification by ID
+      tags:
+      - notification
+  /token:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new authentication token based on the provided user data.
+      parameters:
+      - description: Token request body
+        in: body
+        name: token
+        required: true
+        schema:
+          $ref: '#/definitions/entity.Token'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Token created successfully
+          schema:
+            $ref: '#/definitions/entity.Token'
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new token
+      tags:
+      - auth
+  /token/{user}:
+    delete:
+      description: Deletes the authentication token for a specified user.
+      parameters:
+      - description: User identifier
+        in: path
+        name: user
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token deleted successfully
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: User parameter is required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Token not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete token by user
+      tags:
+      - auth
+    get:
+      description: Retrieves the authentication token for a specified user.
+      parameters:
+      - description: User identifier
+        in: path
+        name: user
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Token retrieved successfully
+          schema:
+            $ref: '#/definitions/entity.Token'
+        "400":
+          description: User parameter is required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Token not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get token by user
+      tags:
+      - auth
+swagger: "2.0"

@@ -24,6 +24,18 @@ func NewNotificationController(
 	}
 }
 
+// CreateNotification godoc
+// @Summary Create a new notification
+// @Description Creates a new notification based on the provided notification data.
+// @Tags notification
+// @Accept json
+// @Produce json
+// @Param notification body value.NotificationInput true "Notification request body"
+// @Success 200 {string} string "Notification sent successfully"
+// @Failure 400 {object} map[string]string "Invalid request body"
+// @Failure 422 {object} map[string]string "Unprocessable entity"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /notification [post]
 func (nc *NotificationController) CreateNotification(httpContext *gin.Context) {
 	var requestParams value.NotificationInput
 	if err := httpContext.BindJSON(&requestParams); err != nil {
@@ -54,6 +66,16 @@ func (nc *NotificationController) CreateNotification(httpContext *gin.Context) {
 	httpContext.JSON(http.StatusOK, "notification sent successfully")
 }
 
+// GetNotification godoc
+// @Summary Get notification by ID
+// @Description Retrieves a notification by its unique identifier.
+// @Tags notification
+// @Produce json
+// @Param id path string true "Notification ID"
+// @Success 200 {object} value.NotificationInput "Notification retrieved successfully"
+// @Failure 404 {object} map[string]string "Notification not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /notification/{id} [get]
 func (nc *NotificationController) GetNotification(httpContext *gin.Context) {
 	id := httpContext.Param("id")
 

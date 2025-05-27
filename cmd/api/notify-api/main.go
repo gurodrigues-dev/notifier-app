@@ -6,12 +6,22 @@ import (
 
 	"github.com/gin-gonic/gin"
 	v1 "github.com/gurodrigues-dev/notifier-app/cmd/api/notify-api/routes/v1"
+	_ "github.com/gurodrigues-dev/notifier-app/docs"
 	"github.com/gurodrigues-dev/notifier-app/internal/domain/middleware"
 	"github.com/gurodrigues-dev/notifier-app/internal/infra"
 	"github.com/gurodrigues-dev/notifier-app/internal/infra/setup"
 	"github.com/spf13/viper"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @title Notify API
+// @version 0.1
+// @description Notify API Swagger Documentation
+// @termsOfService http://swagger.io/terms/
+
+// @host localhost:9999
+// @BasePath /api/v1/
 func main() {
 	setup := setup.NewSetup()
 	setup.Logger("notify-app")
@@ -33,6 +43,7 @@ func setupNotifyApi() *gin.Engine {
 	router := gin.Default()
 	router.GET("/status", getStatus)
 	router.GET("/metrics", infra.App.Metrics.ExposeHandler())
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	groupV1 := router.Group("api/v1")
 	groupV1.Use(configHeaders())

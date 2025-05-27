@@ -365,6 +365,7 @@ Retrieve details of a failed notification.
 |---------------|-----------------------------------|---------|
 | Usage Model   | General usage model of the system | ![Usage Model](https://i.imgur.com/3cBtfo5.png) |
 | App Flow      | Internal flow of the application  | ![App Flow](https://i.imgur.com/I8UuSc9.png) |
+| Swagger       | Documentation of the application  | ![App Flow](https://i.imgur.com/v8Kv6dx.png) |
 
 ## 💡 Architecture
 

@@ -26,6 +26,17 @@ func NewAuthController(
 	}
 }
 
+// CreateToken godoc
+// @Summary Create a new token
+// @Description Creates a new authentication token based on the provided user data.
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param token body entity.Token true "Token request body"
+// @Success 201 {object} entity.Token "Token created successfully"
+// @Failure 400 {object} map[string]string "Invalid request body"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /token [post]
 func (ac *AuthController) CreateToken(httpContext *gin.Context) {
 	var requestParams entity.Token
 	if err := httpContext.BindJSON(&requestParams); err != nil {
@@ -54,6 +65,17 @@ func (ac *AuthController) CreateToken(httpContext *gin.Context) {
 	return
 }
 
+// GetToken godoc
+// @Summary Get token by user
+// @Description Retrieves the authentication token for a specified user.
+// @Tags auth
+// @Produce json
+// @Param user path string true "User identifier"
+// @Success 200 {object} entity.Token "Token retrieved successfully"
+// @Failure 400 {object} map[string]string "User parameter is required"
+// @Failure 404 {object} map[string]string "Token not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /token/{user} [get]
 func (ac *AuthController) GetToken(httpContext *gin.Context) {
 	user := httpContext.Param("user")
 	if stringcommon.Empty(user) {
@@ -80,6 +102,17 @@ func (ac *AuthController) GetToken(httpContext *gin.Context) {
 	httpContext.JSON(http.StatusOK, token)
 }
 
+// DeleteToken godoc
+// @Summary Delete token by user
+// @Description Deletes the authentication token for a specified user.
+// @Tags auth
+// @Produce json
+// @Param user path string true "User identifier"
+// @Success 200 {object} map[string]string "Token deleted successfully"
+// @Failure 400 {object} map[string]string "User parameter is required"
+// @Failure 404 {object} map[string]string "Token not found"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /token/{user} [delete]
 func (ac *AuthController) DeleteToken(httpContext *gin.Context) {
 	user := httpContext.Param("user")
 	if stringcommon.Empty(user) {
